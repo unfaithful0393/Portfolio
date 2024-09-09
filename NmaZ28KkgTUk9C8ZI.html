@@ -1,0 +1,912 @@
+<html><head><base href="https://Chatbot.com">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2980b9;
+  --background-color: #ecf0f1;
+  --text-color: #2c3e50;
+  --border-color: #bdc3c7;
+  --chat-user-bg: #d5e9f7;
+  --chat-ai-bg: #e8e8e8;
+  --slider-bg: #dfe6e9;
+  --slider-thumb: #3498db;
+  --accent-color: #e74c3c;
+  --success-color: #2ecc71;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  display: flex;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 1400px;
+  height: 90vh;
+}
+
+.left-panel, .middle-panel, .right-panel {
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.left-panel, .middle-panel {
+  border-right: 1px solid var(--border-color);
+}
+
+h1, h2, h3 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.input-area, .chat-input {
+  margin-bottom: 20px;
+}
+
+.user-input, .chat-input textarea, .editable-field {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  resize: vertical;
+}
+
+.user-input:focus, .chat-input textarea:focus, .editable-field:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.send-button, .edit-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.send-button:hover, .edit-button:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.output-area, .chat-area {
+  flex-grow: 1;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 20px;
+  background-color: #fff;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.loading {
+  text-align: center;
+  font-style: italic;
+  color: var(--secondary-color);
+  margin: 20px 0;
+}
+
+.chat-message {
+  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 18px;
+  max-width: 80%;
+}
+
+.user-message {
+  background-color: var(--chat-user-bg);
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.ai-message {
+  background-color: var(--chat-ai-bg);
+  align-self: flex-start;
+}
+
+#graphical-view {
+  width: 100%;
+  height: 250px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-top: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.trait-slider {
+  margin-bottom: 20px;
+}
+
+.trait-slider label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.trait-slider input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--slider-bg);
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+.trait-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  cursor: pointer;
+  transition: background .15s ease-in-out;
+}
+
+.trait-slider input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  cursor: pointer;
+  transition: background .15s ease-in-out;
+}
+
+.trait-slider .slider-value {
+  display: inline-block;
+  position: relative;
+  width: 60px;
+  color: #fff;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 3px;
+  background: var(--primary-color);
+  padding: 5px 10px;
+  margin-left: 8px;
+}
+
+.trait-extremes {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+#emoji-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 100px;
+  transition: all 0.5s ease;
+}
+
+.custom-trait {
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f7f7f7;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.custom-trait input[type="text"],
+.custom-trait select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+}
+
+.custom-trait button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.custom-trait button:hover {
+  background-color: #c0392b;
+}
+
+#add-trait-btn {
+  margin-top: 20px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#add-trait-btn:hover {
+  background-color: #2c3e50;
+}
+
+#self-reflection {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f0f8ff;
+  border-radius: 10px;
+  border: 1px solid var(--primary-color);
+}
+
+#self-reflection h3 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+#self-reflection p {
+  font-style: italic;
+  color: #34495e;
+}
+
+#context-window {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #e8f6f3;
+  border-radius: 10px;
+  border: 1px solid var(--success-color);
+}
+
+#context-window h3 {
+  color: var(--success-color);
+  margin-bottom: 10px;
+}
+
+#context-window ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#context-window li {
+  margin-bottom: 5px;
+  color: #16a085;
+}
+
+.editable-field {
+  background-color: #fff;
+  cursor: text;
+}
+
+.edit-button {
+  margin-top: 10px;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .left-panel, .middle-panel, .right-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 20px;
+  }
+
+  .right-panel {
+    border-bottom: none;
+  }
+
+  body {
+    padding: 10px;
+  }
+
+  .container {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  #graphical-view {
+    height: 200px;
+  }
+
+  .chat-area {
+    max-height: 300px;
+  }
+
+  .trait-slider {
+    margin-bottom: 15px;
+  }
+
+  .custom-trait input[type="text"],
+  .custom-trait select {
+    margin-bottom: 5px;
+  }
+
+  .user-input, .chat-input textarea, .editable-field {
+    font-size: 16px; /* Prevents zoom on mobile */
+  }
+
+  .send-button, .edit-button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .trait-slider input[type="range"] {
+    width: calc(100% - 70px);
+  }
+
+  .trait-slider .slider-value {
+    width: 50px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="left-panel">
+    <h1>AI Agent Creator</h1>
+    
+    <div class="input-area">
+      <textarea id="user-input" class="user-input" rows="5" placeholder="Describe your AI agent's attributes, personality, and background..."></textarea>
+      <button id="create-button" class="send-button" onclick="createAIAgent()">Create Agent</button>
+    </div>
+    
+    <div class="output-area">
+      <h2>Your AI Agent Profile</h2>
+      <div id="loading" class="loading" style="display:none;">Analyzing and creating your AI agent...</div>
+      <div id="agent-profile"></div>
+    </div>
+
+    <div id="self-reflection">
+      <h3>Agent Self-Reflection</h3>
+      <p id="self-reflection-text">As the AI agent develops, its thoughts and insights will appear here...</p>
+    </div>
+  </div>
+  
+  <div class="middle-panel">
+    <h2>Customize Your AI Agent</h2>
+    <div id="trait-sliders">
+      <!-- Default trait sliders will be dynamically added here -->
+    </div>
+    <div id="custom-traits">
+      <!-- Custom traits will be added here -->
+    </div>
+    <button id="add-trait-btn" onclick="addCustomTrait()">Add Custom Trait</button>
+    <button onclick="updateAIAgent()" class="send-button">Update Agent</button>
+
+    <div id="context-window">
+      <h3>Context Window</h3>
+      <ul id="context-list">
+        <!-- Context items will be dynamically added here -->
+      </ul>
+    </div>
+  </div>
+  
+  <div class="right-panel">
+    <h2>Interact with Your AI Agent</h2>
+    <div class="chat-area" id="chat-area"></div>
+    <div class="chat-input">
+      <textarea id="chat-input" rows="3" placeholder="Type your message or question here..."></textarea>
+      <button onclick="sendMessage()" class="send-button">Send</button>
+    </div>
+    <div id="graphical-view">
+      <div id="emoji-container">😊</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+let aiAgent = {};
+let chatHistory = [];
+let currentEmotionIndex = 0;
+let emotionInterval;
+let customTraitCount = 0;
+let contextWindow = [];
+
+const defaultTraits = [
+  { name: "Extroversion", min: "Introverted", max: "Extroverted" },
+  { name: "Emotional Stability", min: "Neurotic", max: "Stable" },
+  { name: "Agreeableness", min: "Challenging", max: "Agreeable" },
+  { name: "Conscientiousness", min: "Spontaneous", max: "Organized" },
+  { name: "Openness", min: "Conventional", max: "Inventive" },
+  { name: "Intelligence", min: "Practical", max: "Analytical" },
+  { name: "Creativity", min: "Realistic", max: "Imaginative" },
+  { name: "Assertiveness", min: "Passive", max: "Dominant" },
+  { name: "Empathy", min: "Detached", max: "Compassionate" },
+  { name: "Humor", min: "Serious", max: "Playful" }
+];
+
+function createTraitSliders() {
+  const traitSlidersDiv = document.getElementById('trait-sliders');
+  traitSlidersDiv.innerHTML = '';
+
+  defaultTraits.forEach(trait => {
+    const sliderDiv = document.createElement('div');
+    sliderDiv.className = 'trait-slider';
+    sliderDiv.innerHTML = `
+      <label for="${trait.name.toLowerCase()}">${trait.name}</label>
+      <input type="range" id="${trait.name.toLowerCase()}" name="${trait.name.toLowerCase()}" min="0" max="100" value="50">
+      <span class="slider-value">50</span>
+      <div class="trait-extremes">
+        <span>${trait.min}</span>
+        <span>${trait.max}</span>
+      </div>
+    `;
+    traitSlidersDiv.appendChild(sliderDiv);
+
+    const slider = sliderDiv.querySelector('input[type="range"]');
+    const output = sliderDiv.querySelector('.slider-value');
+    slider.oninput = function() {
+      output.innerHTML = this.value;
+    }
+  });
+}
+
+function addCustomTrait() {
+  customTraitCount++;
+  const customTraitsDiv = document.getElementById('custom-traits');
+  const newTraitDiv = document.createElement('div');
+  newTraitDiv.className = 'custom-trait';
+  newTraitDiv.innerHTML = `
+    <input type="text" id="custom-trait-name-${customTraitCount}" placeholder="Enter trait name">
+    <select id="custom-trait-type-${customTraitCount}">
+      <option value="range">Range</option>
+      <option value="boolean">Boolean</option>
+      <option value="multiselect">Multi-select</option>
+    </select>
+    <div id="custom-trait-options-${customTraitCount}">
+      <!-- Options will be dynamically added based on the selected type -->
+    </div>
+    <button onclick="removeCustomTrait(this)">Remove</button>
+  `;
+  customTraitsDiv.appendChild(newTraitDiv);
+
+  const typeSelect = document.getElementById(`custom-trait-type-${customTraitCount}`);
+  typeSelect.addEventListener('change', () => updateCustomTraitOptions(customTraitCount));
+  updateCustomTraitOptions(customTraitCount);
+}
+
+function updateCustomTraitOptions(traitId) {
+  const optionsDiv = document.getElementById(`custom-trait-options-${traitId}`);
+  const traitType = document.getElementById(`custom-trait-type-${traitId}`).value;
+  
+  switch(traitType) {
+    case 'range':
+      optionsDiv.innerHTML = `
+        <input type="text" id="custom-trait-min-${traitId}" placeholder="Minimum value">
+        <input type="text" id="custom-trait-max-${traitId}" placeholder="Maximum value">
+        <input type="range" id="custom-trait-slider-${traitId}" min="0" max="100" value="50">
+        <span class="slider-value">50</span>
+      `;
+      const slider = optionsDiv.querySelector('input[type="range"]');
+      const output = optionsDiv.querySelector('.slider-value');
+      slider.oninput = function() {
+        output.innerHTML = this.value;
+      }
+      break;
+    case 'boolean':
+      optionsDiv.innerHTML = `
+        <label>
+          <input type="checkbox" id="custom-trait-checkbox-${traitId}">
+          Enable this trait
+        </label>
+      `;
+      break;
+    case 'multiselect':
+      optionsDiv.innerHTML = `
+        <input type="text" id="custom-trait-options-${traitId}" placeholder="Enter options (comma-separated)">
+        <select id="custom-trait-select-${traitId}" multiple>
+          <!-- Options will be added dynamically -->
+        </select>
+      `;
+      const optionsInput = document.getElementById(`custom-trait-options-${traitId}`);
+      optionsInput.addEventListener('change', () => updateMultiselectOptions(traitId));
+      break;
+  }
+}
+
+function updateMultiselectOptions(traitId) {
+  const optionsInput = document.getElementById(`custom-trait-options-${traitId}`);
+  const selectElement = document.getElementById(`custom-trait-select-${traitId}`);
+  const options = optionsInput.value.split(',').map(option => option.trim());
+  
+  selectElement.innerHTML = '';
+  options.forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.value = option;
+    optionElement.textContent = option;
+    selectElement.appendChild(optionElement);
+  });
+}
+
+function removeCustomTrait(button) {
+  button.parentElement.remove();
+}
+
+async function createAIAgent() {
+  const userInput = document.getElementById('user-input').value.trim();
+  if (userInput === '') return;
+
+  const loadingDiv = document.getElementById('loading');
+  const agentProfileDiv = document.getElementById('agent-profile');
+
+  loadingDiv.style.display = 'block';
+  agentProfileDiv.innerHTML = '';
+
+  try {
+    const response = await fetch('/api/create-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: userInput })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    aiAgent = await response.json();
+    displayAgentProfile(aiAgent);
+    initializeGraphicalView();
+    createTraitSliders();
+    updateTraitSliders(aiAgent.traits);
+    chatHistory = [];
+    startEmotionAnimation(aiAgent.emotionalState);
+    updateContextWindow("Agent created");
+    updateSelfReflection();
+  } catch (error) {
+    console.error('Error:', error);
+    agentProfileDiv.textContent = "An error occurred while creating your AI agent. Please try again.";
+  } finally {
+    loadingDiv.style.display = 'none';
+  }
+}
+
+function displayAgentProfile(agent) {
+  const agentProfileDiv = document.getElementById('agent-profile');
+  agentProfileDiv.innerHTML = `
+    <h3 class="editable-field" contenteditable="true" onblur="updateAgentField('name', this.textContent)">${agent.name}</h3>
+    <p><strong>Personality:</strong> <span class="editable-field" contenteditable="true" onblur="updateAgentField('personality', this.textContent)">${agent.personality}</span></p>
+    <p><strong>Background:</strong> <span class="editable-field" contenteditable="true" onblur="updateAgentField('background', this.textContent)">${agent.background}</span></p>
+    <p><strong>Key Traits:</strong> ${Object.entries(agent.traits).map(([trait, value]) => `${trait}: ${value}`).join(', ')}</p>
+    <p><strong>Knowledge Areas:</strong> <span class="editable-field" contenteditable="true" onblur="updateAgentField('knowledgeAreas', this.textContent)">${agent.knowledgeAreas.join(', ')}</span></p>
+    <button class="edit-button" onclick="saveAgentChanges()">Save Changes</button>
+  `;
+}
+
+function updateAgentField(field, value) {
+  if (field === 'knowledgeAreas') {
+    aiAgent[field] = value.split(',').map(area => area.trim());
+  } else {
+    aiAgent[field] = value;
+  }
+}
+
+async function saveAgentChanges() {
+  try {
+    const response = await fetch('/api/update-agent-description', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(aiAgent)
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const updatedAgent = await response.json();
+    aiAgent = updatedAgent;
+    displayAgentProfile(aiAgent);
+    updateContextWindow("Agent description updated");
+    updateSelfReflection();
+  } catch (error) {
+    console.error('Error:', error);
+    alert("An error occurred while updating your AI agent description. Please try again.");
+  }
+}
+
+function updateTraitSliders(traits) {
+  Object.entries(traits).forEach(([trait, value]) => {
+    const slider = document.getElementById(trait.toLowerCase());
+    if (slider) {
+      slider.value = value;
+      slider.nextElementSibling.innerHTML = value;
+    }
+  });
+}
+
+async function updateAIAgent() {
+  const updatedTraits = {};
+  defaultTraits.forEach(trait => {
+    const slider = document.getElementById(trait.name.toLowerCase());
+    updatedTraits[trait.name] = parseInt(slider.value);
+  });
+
+  // Add custom traits
+  for (let i = 1; i <= customTraitCount; i++) {
+    const nameInput = document.getElementById(`custom-trait-name-${i}`);
+    const typeSelect = document.getElementById(`custom-trait-type-${i}`);
+    
+    if (nameInput && typeSelect) {
+      const traitName = nameInput.value;
+      const traitType = typeSelect.value;
+      
+      switch(traitType) {
+        case 'range':
+          const slider = document.getElementById(`custom-trait-slider-${i}`);
+          updatedTraits[traitName] = parseInt(slider.value);
+          break;
+        case 'boolean':
+          const checkbox = document.getElementById(`custom-trait-checkbox-${i}`);
+          updatedTraits[traitName] = checkbox.checked;
+          break;
+        case 'multiselect':
+          const select = document.getElementById(`custom-trait-select-${i}`);
+          updatedTraits[traitName] = Array.from(select.selectedOptions).map(option => option.value);
+          break;
+      }
+    }
+  }
+
+  try {
+    const response = await fetch('/api/update-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        agent: aiAgent,
+        updatedTraits: updatedTraits
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const updatedAgent = await response.json();
+    aiAgent = updatedAgent;
+    displayAgentProfile(aiAgent);
+    startEmotionAnimation(aiAgent.emotionalState);
+    updateContextWindow("Agent updated");
+    updateSelfReflection();
+  } catch (error) {
+    console.error('Error:', error);
+    alert("An error occurred while updating your AI agent. Please try again.");
+  }
+}
+
+async function sendMessage() {
+  const chatInput = document.getElementById('chat-input');
+  const message = chatInput.value.trim();
+  if (message === '') return;
+
+  displayMessage(message, 'user');
+  chatInput.value = '';
+
+  chatHistory.push({ role: 'user', content: message });
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        message, 
+        agent: aiAgent,
+        chatHistory: chatHistory,
+        contextWindow: contextWindow
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const data = await response.json();
+    displayMessage(data.response, 'ai');
+    startEmotionAnimation(data.emotionalState);
+
+    chatHistory.push({ role: 'assistant', content: data.response });
+    
+    // Limit chat history to last 10 messages to prevent token limit issues
+    if (chatHistory.length > 10) {
+      chatHistory = chatHistory.slice(-10);
+    }
+
+    updateContextWindow(data.contextUpdate);
+    updateSelfReflection();
+  } catch (error) {
+    console.error('Error:', error);
+    displayMessage("I apologize, but I'm having trouble processing that request at the moment. Could you please try again?", 'ai');
+  }
+}
+
+function displayMessage(message, sender) {
+  const chatArea = document.getElementById('chat-area');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `chat-message ${sender}-message`;
+  messageDiv.textContent = message;
+  chatArea.appendChild(messageDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function initializeGraphicalView() {
+  const graphicalView = document.getElementById('graphical-view');
+  graphicalView.innerHTML = '<div id="emoji-container">😊</div>';
+}
+
+function startEmotionAnimation(emotionalState) {
+  if (emotionInterval) {
+    clearInterval(emotionInterval);
+  }
+
+  const emojiContainer = document.getElementById('emoji-container');
+  const emotionSequence = getEmotionSequence(emotionalState);
+  currentEmotionIndex = 0;
+
+  emotionInterval = setInterval(() => {
+    emojiContainer.textContent = emotionSequence[currentEmotionIndex];
+    currentEmotionIndex = (currentEmotionIndex + 1) % emotionSequence.length;
+  }, 1000);
+}
+
+function getEmotionSequence(emotion) {
+  const sequences = {
+    happy: ['😊', '😄', '😁', '😆'],
+    sad: ['😢', '😥', '😓', '😔'],
+    angry: ['😠', '😡', '🤬', '😤'],
+    neutral: ['😐', '😑', '😶', '🙄'],
+    excited: ['😃', '🤩', '😍', '🥳'],
+    thoughtful: ['🤔', '🧐', '🤨', '🤷']
+  };
+  return sequences[emotion] || sequences.neutral;
+}
+
+function updateContextWindow(newContext) {
+  contextWindow.push(newContext);
+  if (contextWindow.length > 5) {
+    contextWindow.shift();
+  }
+  
+  const contextList = document.getElementById('context-list');
+  contextList.innerHTML = '';
+  contextWindow.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    contextList.appendChild(li);
+  });
+}
+
+function updateSelfReflection() {
+  const reflectionText = document.getElementById('self-reflection-text');
+  fetch('/api/self-reflect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      agent: aiAgent,
+      chatHistory: chatHistory,
+      contextWindow: contextWindow
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    reflectionText.textContent = data.reflection;
+  })
+  .catch(error => {
+    console.error('Error during self-reflection:', error);
+    reflectionText.textContent = "I'm currently processing my thoughts...";
+  });
+}
+
+// Improved auto-prompting feature
+const userInput = document.getElementById('user-input');
+userInput.addEventListener('input', debounce(autoPrompt, 300));
+
+async function autoPrompt() {
+  const input = userInput.value.trim();
+  if (input.length < 15) return;
+
+  try {
+    const response = await fetch('/api/auto-prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ partial_description: input })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const data = await response.json();
+    if (data.suggestion) {
+      const currentPosition = userInput.selectionStart;
+      const newText = userInput.value.slice(0, currentPosition) + data.suggestion;
+      userInput.value = newText;
+      userInput.setSelectionRange(newText.length, newText.length);
+    }
+  } catch (error) {
+    console.error('Auto-prompt error:', error);
+  }
+}
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+function lazyLoadGraphicalView() {
+  const graphicalView = document.getElementById('graphical-view');
+  if (graphicalView.getBoundingClientRect().top <= window.innerHeight && !graphicalView.dataset.loaded) {
+    initializeGraphicalView();
+    graphicalView.dataset.loaded = true;
+  }
+}
+
+window.addEventListener('scroll', lazyLoadGraphicalView);
+window.addEventListener('resize', lazyLoadGraphicalView);
+lazyLoadGraphicalView();
+
+function optimizeForMobile() {
+  if (window.innerWidth <= 768) {
+    const chatInput = document.getElementById('chat-input');
+    chatInput.setAttribute('rows', '2');
+    
+    const userInput = document.getElementById('user-input');
+    userInput.setAttribute('rows', '3');
+  }
+}
+
+window.addEventListener('resize', optimizeForMobile);
+optimizeForMobile();
+
+// Initialize trait sliders on page load
+createTraitSliders();
+</script>
+</body></html>
